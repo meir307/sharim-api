@@ -11,6 +11,7 @@ router.post('/forgotPassword', userController.forgotPassword.bind(userController
 router.post('/resetPassword', userController.resetPassword.bind(userController));
 router.post('/changePassword', userController.changePassword.bind(userController));
 router.post('/updateProfile', userController.updateProfile.bind(userController));
+router.post('/SaveCategories', userController.saveCategories.bind(userController));
 router.post('/getUserByEmail', userController.getUserByEmail.bind(userController));
 
 

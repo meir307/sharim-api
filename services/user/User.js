@@ -16,6 +16,8 @@ class User {
   email = ''
   password = ''
   role = ''
+  categories = ''
+  artists = ''
   adminType = null
   activationCode = ''
   resetCode = ''
@@ -32,6 +34,8 @@ class User {
     this.crud = new CRUD(dbConfig.connectionString);
     this.clientType = user.clientType;
     this.role = user.role;
+    this.categories = user.categories;
+    this.artists = user.artists;
     this.adminType = user.adminType || null;
     this.id = user.id;
     this.factoryName = user.factoryName || '';
@@ -75,6 +79,8 @@ class User {
         this.phone = userData.phone;
         this.email = userData.email;
         this.role = userData.role;
+        this.categories = userData.categories;
+        this.artists = userData.artists;
         this.adminType = userData.adminType || null;
         this.clientType = userData.clientType;
         this.createdAt = userData.createdAt;
@@ -183,6 +189,8 @@ class User {
       this.createdAt = userData.createdAt;
       this.activationCode = userData.activationCode;
       this.role = userData.role;
+      this.categories = userData.categories;
+      this.artists = userData.artists;
       this.adminType = userData.adminType || null;
       this.isActive = userData.isActive || 0;
 
@@ -251,6 +259,26 @@ class User {
       new SqlParams('id', userId)
     ];
     await this.crud.executeNonQueryWithParams(query, params);
+  }
+
+  async saveCategories(categories) {
+    try {
+      const payload =
+        typeof categories === 'string' ? categories : JSON.stringify(categories);
+      const query = 'UPDATE users SET categories = ? WHERE id = ?';
+      const params = [
+        new SqlParams('categories', payload),
+        new SqlParams('id', this.id)
+      ];
+      await this.crud.executeNonQueryWithParams(query, params);
+      this.isSuccess = true;
+      this.message = 'קטגוריות נשמרו בהצלחה';
+      return true;
+    } catch (error) {
+      console.error('Error in saveCategories:', error);
+      this.message = 'שגיאה בשמירת קטגוריות';
+      return false;
+    }
   }
 
   async updateUser() {
@@ -624,6 +652,8 @@ class User {
       createdAt: this.createdAt,
       sessionId: this.sessionId,
       role: this.role,
+      categories: this.categories,
+      artists: this.artists,
       AdminType: this.adminType,
       isAuthenticated: true,
       isActive: this.isActive

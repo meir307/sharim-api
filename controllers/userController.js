@@ -277,6 +277,34 @@ class UserController extends BaseController {
     }
   }
 
+  async saveCategories(req, res) {
+    try {
+      if (!req.sessionId) {
+        return res.status(401).json({ success: false, message: 'לא מחובר' });
+      }
+
+      const u = await User.fromSessionId(req.sessionId);
+      if (!u.isSuccess) {
+        return res.status(401).json({ success: false, message: u.message || 'סשן לא תקין' });
+      }
+
+      const { categories } = req.body || {};
+      if (categories === undefined || categories === null) {
+        return res.status(400).json({ success: false, message: 'קטגוריות נדרשות' });
+      }
+
+      const user = new User({ id: u.id });
+      const ok = await user.saveCategories(categories);
+      if (!ok) {
+        return res.status(500).json({ success: false, message: user.message || 'תקלה בשמירת קטגוריות' });
+      }
+
+      return res.status(200).json({ success: true, message: 'קטגוריות נשמרו בהצלחה' });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  }
+
   async getUserByEmail(req, res) {
     try {
       const u = await this.validateSession(req, res);
