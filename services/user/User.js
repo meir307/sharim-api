@@ -281,6 +281,26 @@ class User {
     }
   }
 
+  async saveArtists(artists) {
+    try {
+      const payload =
+        typeof artists === 'string' ? artists : JSON.stringify(artists);
+      const query = 'UPDATE users SET artists = ? WHERE id = ?';
+      const params = [
+        new SqlParams('artists', payload),
+        new SqlParams('id', this.id)
+      ];
+      await this.crud.executeNonQueryWithParams(query, params);
+      this.isSuccess = true;
+      this.message = 'אמנים נשמרו בהצלחה';
+      return true;
+    } catch (error) {
+      console.error('Error in saveArtists:', error);
+      this.message = 'שגיאה בשמירת אמנים';
+      return false;
+    }
+  }
+
   async updateUser() {
     try {
       const query = 'UPDATE users SET fullname = ?, email = ?, phone = ? WHERE id = ?';
