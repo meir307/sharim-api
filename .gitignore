@@ -1,0 +1,14 @@
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.*
+uploads/
+logs/
+*.log
+.DS_Store
+Thumbs.db
+# Local secrets — keep out of Git; use your own untracked copy or env-based config
+config/db.js
+services/mail/baseMail.js
