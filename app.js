@@ -3,6 +3,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const commonRoutes = require('./routes/commonRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const songRoutes = require('./routes/songRoutes');
 const sessionIdMiddleware = require('./middleware/sessionId');
 
 const app = express();
@@ -20,6 +21,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/user', userRoutes);
 app.use('/api/common', commonRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/song', songRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {
