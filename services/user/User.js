@@ -6,6 +6,20 @@ const bcrypt = require('bcrypt');
 const RegistrationMail = require('../mail/Registration/RegistrationMail');
 const PasswordResetMail = require('../mail/PasswordReset/PasswordResetMail');
 const RegistrationCommitteeMemberMail = require('../mail/RegistrationCommitteeMember/RegistrationCommitteeMemberMail');
+const { randomSixDigitString } = require('../../utils/helpers');
+
+function parsePlayListsColumn(value) {
+  if (value == null || value === '') return null;
+  if (typeof value === 'object' && !Buffer.isBuffer(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 class User {
 
@@ -18,6 +32,8 @@ class User {
   role = ''
   categories = ''
   artists = ''
+  playLists = null
+  emitCode = ''
   adminType = null
   activationCode = ''
   resetCode = ''
@@ -36,6 +52,8 @@ class User {
     this.role = user.role;
     this.categories = user.categories;
     this.artists = user.artists;
+    this.playLists = user.playLists !== undefined ? user.playLists : null;
+    this.emitCode = user.emitCode != null ? String(user.emitCode) : '';
     this.adminType = user.adminType || null;
     this.id = user.id;
     this.factoryName = user.factoryName || '';
@@ -81,6 +99,8 @@ class User {
         this.role = userData.role;
         this.categories = userData.categories;
         this.artists = userData.artists;
+        this.playLists = parsePlayListsColumn(userData.playLists);
+        this.emitCode = userData.emitCode != null ? String(userData.emitCode) : '';
         this.adminType = userData.adminType || null;
         this.clientType = userData.clientType;
         this.createdAt = userData.createdAt;
@@ -191,6 +211,8 @@ class User {
       this.role = userData.role;
       this.categories = userData.categories;
       this.artists = userData.artists;
+      this.playLists = parsePlayListsColumn(userData.playLists);
+      this.emitCode = userData.emitCode != null ? String(userData.emitCode) : '';
       this.adminType = userData.adminType || null;
       this.isActive = userData.isActive || 0;
 
@@ -301,6 +323,26 @@ class User {
     }
   }
 
+  async savePlaylists(playLists) {
+    try {
+      const payload =
+        typeof playLists === 'string' ? playLists : JSON.stringify(playLists);
+      const query = 'UPDATE users SET playLists = ? WHERE id = ?';
+      const params = [
+        new SqlParams('playLists', payload),
+        new SqlParams('id', this.id)
+      ];
+      await this.crud.executeNonQueryWithParams(query, params);
+      this.isSuccess = true;
+      this.message = 'פלייליסטים נשמרו בהצלחה';
+      return true;
+    } catch (error) {
+      console.error('Error in savePlaylists:', error);
+      this.message = 'שגיאה בשמירת פלייליסטים';
+      return false;
+    }
+  }
+
   async updateUser() {
     try {
       const query = 'UPDATE users SET fullname = ?, email = ?, phone = ? WHERE id = ?';
@@ -327,8 +369,10 @@ class User {
     // Hash the password before storing
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(this.password, saltRounds);
-    
-    const query = 'INSERT INTO users (fullname, email, phone, password, createdAt, role, activationCode, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    this.emitCode = randomSixDigitString();
+
+    const query =
+      'INSERT INTO users (fullname, email, phone, password, createdAt, role, activationCode, isActive, playLists, emitCode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const params = [
       new SqlParams('fullname', this.fullName),
       new SqlParams('email', this.email),
@@ -338,6 +382,8 @@ class User {
       new SqlParams('role', this.role),
       new SqlParams('activationCode', this.activationCode),
       new SqlParams('isActive', this.isActive),
+      new SqlParams('playLists', null),
+      new SqlParams('emitCode', this.emitCode),
     ];
 
     await this.crud.executeNonQueryWithParams(query, params);
@@ -674,6 +720,8 @@ class User {
       role: this.role,
       categories: this.categories,
       artists: this.artists,
+      playLists: this.playLists,
+      emitCode: this.emitCode,
       AdminType: this.adminType,
       isAuthenticated: true,
       isActive: this.isActive

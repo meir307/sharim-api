@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 /**
  * Helper function to decode Hebrew filenames that may be encoded incorrectly
@@ -239,6 +240,14 @@ function filePrefixTimeStemp(date = null) {
          now.getMinutes().toString().padStart(2, '0');
 }
 
+/**
+ * Random 6-digit string (000000–999999) for short codes such as emitCode.
+ * @returns {string}
+ */
+function randomSixDigitString() {
+  return String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
+}
+
 module.exports = {
   decodeHebrewFilename,
   fixCorruptedHebrewFilename,
@@ -249,5 +258,6 @@ module.exports = {
   formatFileSize,
   getFileExtension,
   isValidFileType,
-  filePrefixTimeStemp
+  filePrefixTimeStemp,
+  randomSixDigitString
 }; 
