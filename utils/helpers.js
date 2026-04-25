@@ -248,6 +248,33 @@ function randomSixDigitString() {
   return String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
 }
 
+/**
+ * Google Docs/Sheets/Slides "edit" URLs open the full app UI; `/preview` is better for guests (iframe/embed).
+ * Non-Google URLs are returned unchanged.
+ * @param {string} url
+ * @returns {string}
+ */
+function toGuestDisplayLink(url) {
+  if (url == null || typeof url !== 'string') return url;
+  const trimmed = url.trim();
+  if (!trimmed || !trimmed.includes('docs.google.com')) return trimmed;
+
+  try {
+    const u = new URL(trimmed);
+    if (!/^docs\.google\.com$/i.test(u.hostname)) return trimmed;
+    if (!/\/(document|spreadsheets|presentation)\//i.test(u.pathname)) return trimmed;
+    const nextPath = u.pathname.replace(/\/edit(?=\/|[?#]|$)/i, '/preview');
+    if (nextPath === u.pathname) return trimmed;
+    u.pathname = nextPath;
+    return u.toString();
+  } catch {
+    return trimmed.replace(
+      /(https:\/\/docs\.google\.com\/(?:document|spreadsheets|presentation)\/d\/[^/]+\/)edit(?=[?#]|$)/i,
+      '$1preview'
+    );
+  }
+}
+
 module.exports = {
   decodeHebrewFilename,
   fixCorruptedHebrewFilename,
@@ -259,5 +286,6 @@ module.exports = {
   getFileExtension,
   isValidFileType,
   filePrefixTimeStemp,
-  randomSixDigitString
+  randomSixDigitString,
+  toGuestDisplayLink
 }; 

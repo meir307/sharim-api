@@ -1,5 +1,6 @@
 const app = require('./app');
 const appCache = require('./services/common/appCache');
+require('./services/common/sharingTable');
 
 const DEFAULT_PORT = Number(process.env.PORT) || 3001;
 
