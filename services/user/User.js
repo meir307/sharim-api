@@ -34,6 +34,7 @@ class User {
   artists = ''
   playLists = null
   feedbackQuestions = null
+  landingPages = null
   emitCode = ''
   adminType = null
   activationCode = ''
@@ -56,6 +57,8 @@ class User {
     this.playLists = user.playLists !== undefined ? user.playLists : null;
     this.feedbackQuestions =
       user.feedbackQuestions !== undefined ? user.feedbackQuestions : null;
+    this.landingPages =
+      user.landingPages !== undefined ? user.landingPages : null;
     this.emitCode = user.emitCode != null ? String(user.emitCode) : '';
     this.adminType = user.adminType || null;
     this.id = user.id;
@@ -104,6 +107,7 @@ class User {
         this.artists = userData.artists;
         this.playLists = parseJsonColumn(userData.playLists);
         this.feedbackQuestions = parseJsonColumn(userData.feedbackQuestions);
+        this.landingPages = parseJsonColumn(userData.landingPages);
         this.emitCode = userData.emitCode != null ? String(userData.emitCode) : '';
         this.adminType = userData.adminType || null;
         this.clientType = userData.clientType;
@@ -217,6 +221,7 @@ class User {
       this.artists = userData.artists;
       this.playLists = parseJsonColumn(userData.playLists);
       this.feedbackQuestions = parseJsonColumn(userData.feedbackQuestions);
+      this.landingPages = parseJsonColumn(userData.landingPages);
       this.emitCode = userData.emitCode != null ? String(userData.emitCode) : '';
       this.adminType = userData.adminType || null;
       this.isActive = userData.isActive || 0;
@@ -366,6 +371,28 @@ class User {
     } catch (error) {
       console.error('Error in saveFeedbackQuestions:', error);
       this.message = 'שגיאה בשמירת שאלות המשוב';
+      return false;
+    }
+  }
+
+  async saveLandingPages(landingPages) {
+    try {
+      const payload =
+        typeof landingPages === 'string'
+          ? landingPages
+          : JSON.stringify(landingPages);
+      const query = 'UPDATE users SET landingPages = ? WHERE id = ?';
+      const params = [
+        new SqlParams('landingPages', payload),
+        new SqlParams('id', this.id)
+      ];
+      await this.crud.executeNonQueryWithParams(query, params);
+      this.isSuccess = true;
+      this.message = 'דפי הנחיתה נשמרו בהצלחה';
+      return true;
+    } catch (error) {
+      console.error('Error in saveLandingPages:', error);
+      this.message = 'שגיאה בשמירת דפי הנחיתה';
       return false;
     }
   }
@@ -749,6 +776,7 @@ class User {
       artists: this.artists,
       playLists: this.playLists,
       feedbackQuestions: this.feedbackQuestions,
+      landingPages: this.landingPages,
       emitCode: this.emitCode,
       AdminType: this.adminType,
       isAuthenticated: true,

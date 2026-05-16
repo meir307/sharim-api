@@ -434,6 +434,58 @@ class UserController extends BaseController {
     }
   }
 
+  async saveLandingPages(req, res) {
+    try {
+      if (!req.sessionId) {
+        return res.status(401).json({
+          success: false,
+          message: 'לא מחובר',
+          errorMessage: 'לא מחובר'
+        });
+      }
+
+      const u = await User.fromSessionId(req.sessionId);
+      if (!u.isSuccess) {
+        const msg = u.message || 'סשן לא תקין';
+        return res.status(401).json({
+          success: false,
+          message: msg,
+          errorMessage: msg
+        });
+      }
+
+      const body = req.body || {};
+      const landingPages =
+        body.LandingPages !== undefined ? body.LandingPages : body.landingPages;
+      if (landingPages === undefined || landingPages === null) {
+        const msg = 'דפי נחיתה נדרשים';
+        return res.status(400).json({
+          success: false,
+          message: msg,
+          errorMessage: msg
+        });
+      }
+
+      const user = new User({ id: u.id });
+      const ok = await user.saveLandingPages(landingPages);
+      if (!ok) {
+        const msg = user.message || 'תקלה בשמירת דפי הנחיתה';
+        return res.status(500).json({
+          success: false,
+          message: msg,
+          errorMessage: msg
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'דפי הנחיתה נשמרו בהצלחה'
+      });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  }
+
   async getUserByEmail(req, res) {
     try {
       const u = await this.validateSession(req, res);

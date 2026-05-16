@@ -15,6 +15,7 @@ router.post('/SaveCategories', userController.saveCategories.bind(userController
 router.post('/SaveArtists', userController.saveArtists.bind(userController));
 router.post('/SavePlaylists', userController.savePlaylists.bind(userController));
 router.post('/SaveFeedbackQuestions', userController.saveFeedbackQuestions.bind(userController));
+router.post('/SaveLandingPages', userController.saveLandingPages.bind(userController));
 router.post('/getUserByEmail', userController.getUserByEmail.bind(userController));
 
 
