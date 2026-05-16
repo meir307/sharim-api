@@ -8,7 +8,7 @@ const PasswordResetMail = require('../mail/PasswordReset/PasswordResetMail');
 const RegistrationCommitteeMemberMail = require('../mail/RegistrationCommitteeMember/RegistrationCommitteeMemberMail');
 const { randomSixDigitString } = require('../../utils/helpers');
 
-function parsePlayListsColumn(value) {
+function parseJsonColumn(value) {
   if (value == null || value === '') return null;
   if (typeof value === 'object' && !Buffer.isBuffer(value)) return value;
   if (typeof value === 'string') {
@@ -33,6 +33,7 @@ class User {
   categories = ''
   artists = ''
   playLists = null
+  feedbackQuestions = null
   emitCode = ''
   adminType = null
   activationCode = ''
@@ -53,6 +54,8 @@ class User {
     this.categories = user.categories;
     this.artists = user.artists;
     this.playLists = user.playLists !== undefined ? user.playLists : null;
+    this.feedbackQuestions =
+      user.feedbackQuestions !== undefined ? user.feedbackQuestions : null;
     this.emitCode = user.emitCode != null ? String(user.emitCode) : '';
     this.adminType = user.adminType || null;
     this.id = user.id;
@@ -99,7 +102,8 @@ class User {
         this.role = userData.role;
         this.categories = userData.categories;
         this.artists = userData.artists;
-        this.playLists = parsePlayListsColumn(userData.playLists);
+        this.playLists = parseJsonColumn(userData.playLists);
+        this.feedbackQuestions = parseJsonColumn(userData.feedbackQuestions);
         this.emitCode = userData.emitCode != null ? String(userData.emitCode) : '';
         this.adminType = userData.adminType || null;
         this.clientType = userData.clientType;
@@ -211,7 +215,8 @@ class User {
       this.role = userData.role;
       this.categories = userData.categories;
       this.artists = userData.artists;
-      this.playLists = parsePlayListsColumn(userData.playLists);
+      this.playLists = parseJsonColumn(userData.playLists);
+      this.feedbackQuestions = parseJsonColumn(userData.feedbackQuestions);
       this.emitCode = userData.emitCode != null ? String(userData.emitCode) : '';
       this.adminType = userData.adminType || null;
       this.isActive = userData.isActive || 0;
@@ -339,6 +344,28 @@ class User {
     } catch (error) {
       console.error('Error in savePlaylists:', error);
       this.message = 'שגיאה בשמירת פלייליסטים';
+      return false;
+    }
+  }
+
+  async saveFeedbackQuestions(feedbackQuestions) {
+    try {
+      const payload =
+        typeof feedbackQuestions === 'string'
+          ? feedbackQuestions
+          : JSON.stringify(feedbackQuestions);
+      const query = 'UPDATE users SET feedbackQuestions = ? WHERE id = ?';
+      const params = [
+        new SqlParams('feedbackQuestions', payload),
+        new SqlParams('id', this.id)
+      ];
+      await this.crud.executeNonQueryWithParams(query, params);
+      this.isSuccess = true;
+      this.message = 'שאלות המשוב נשמרו בהצלחה';
+      return true;
+    } catch (error) {
+      console.error('Error in saveFeedbackQuestions:', error);
+      this.message = 'שגיאה בשמירת שאלות המשוב';
       return false;
     }
   }
@@ -721,6 +748,7 @@ class User {
       categories: this.categories,
       artists: this.artists,
       playLists: this.playLists,
+      feedbackQuestions: this.feedbackQuestions,
       emitCode: this.emitCode,
       AdminType: this.adminType,
       isAuthenticated: true,

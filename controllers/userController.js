@@ -380,6 +380,60 @@ class UserController extends BaseController {
     }
   }
 
+  async saveFeedbackQuestions(req, res) {
+    try {
+      if (!req.sessionId) {
+        return res.status(401).json({
+          success: false,
+          message: 'לא מחובר',
+          errorMessage: 'לא מחובר'
+        });
+      }
+
+      const u = await User.fromSessionId(req.sessionId);
+      if (!u.isSuccess) {
+        const msg = u.message || 'סשן לא תקין';
+        return res.status(401).json({
+          success: false,
+          message: msg,
+          errorMessage: msg
+        });
+      }
+
+      const body = req.body || {};
+      const feedbackQuestions =
+        body.FeedbackQuestions !== undefined
+          ? body.FeedbackQuestions
+          : body.feedbackQuestions;
+      if (feedbackQuestions === undefined || feedbackQuestions === null) {
+        const msg = 'שאלות משוב נדרשות';
+        return res.status(400).json({
+          success: false,
+          message: msg,
+          errorMessage: msg
+        });
+      }
+
+      const user = new User({ id: u.id });
+      const ok = await user.saveFeedbackQuestions(feedbackQuestions);
+      if (!ok) {
+        const msg = user.message || 'תקלה בשמירת שאלות המשוב';
+        return res.status(500).json({
+          success: false,
+          message: msg,
+          errorMessage: msg
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'שאלות המשוב נשמרו בהצלחה'
+      });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  }
+
   async getUserByEmail(req, res) {
     try {
       const u = await this.validateSession(req, res);
